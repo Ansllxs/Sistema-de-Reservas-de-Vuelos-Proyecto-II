@@ -3,20 +3,13 @@ from tkinter import messagebox
 
 
 
-# ---------- Datos (solo listas) y límites ----------
+# ---------- Datos ----------
 # Cada vuelo: [codigo, origen, destino, precio, matriz_asientos, cantidad_vendidos]
-vuelos = []          # lista global de vuelos
-MAX_FILAS = 50       # límite solicitado
-MAX_COLUMNAS = 20    # límite solicitado
+vuelos = []          #lista global de vuelos
+MAX_FILAS = 50       
+MAX_COLUMNAS = 20    
 
 def crear_vuelo():
-    """
-    Ventana para crear un vuelo ingresando FILAS y COLUMNAS.
-    Reglas:
-      - enteros > 0
-      - filas <= 50, columnas <= 20 (máximos permitidos)
-    Guarda en: vuelos (lista global)
-    """
     ventana_crear = tk.Toplevel(ventana)
     ventana_crear.title("Crear nuevo vuelo")
     ventana_crear.geometry("360x260")
@@ -48,7 +41,7 @@ def crear_vuelo():
             return
 
         if filas_int <= 0 or columnas_int <= 0:
-            messagebox.showerror("Error", "Filas y columnas deben ser > 0.")
+            messagebox.showerror("Error", "Filas y columnas deben ser mayor a 0.")
             return
 
         if filas_int > MAX_FILAS or columnas_int > MAX_COLUMNAS:
