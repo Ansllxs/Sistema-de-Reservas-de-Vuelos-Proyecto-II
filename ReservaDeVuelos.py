@@ -71,6 +71,8 @@ def crear_vuelo():
             f"¡Vuelo {numero_interno_vuelo} creado exitosamente!\n"
             f"Tamaño: {filas_int} filas x {columnas_int} columnas"
         )
+        
+
         ventana_crear.destroy()
 
     boton_crear = tk.Button(
@@ -83,6 +85,125 @@ def crear_vuelo():
     boton_cancelar = tk.Button(
         ventana_crear, text="Cancelar",
         command=ventana_crear.destroy,
+        bg="light gray"
+    )
+    boton_cancelar.pack(pady=5)
+
+def asignar_datos_vuelo():
+    if len(vuelos) == 0:
+        messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
+        return
+    
+    ventana_asignar = tk.Toplevel(ventana)
+    ventana_asignar.title("Asignar datos al vuelo")
+    ventana_asignar.geometry("360x320")
+    ventana_asignar.configure(bg="lavenderblush")
+    
+    # Número de vuelo
+    etiqueta_vuelo = tk.Label(ventana_asignar, text=f"Número de vuelo (1 a {len(vuelos)}):", bg="lavenderblush")
+    etiqueta_vuelo.pack(pady=5)
+    entry_vuelo = tk.Entry(ventana_asignar)
+    entry_vuelo.pack()
+    
+    # Código de vuelo
+    etiqueta_codigo = tk.Label(ventana_asignar, text="Código de vuelo (ej: CM123):", bg="lavenderblush")
+    etiqueta_codigo.pack(pady=5)
+    entry_codigo = tk.Entry(ventana_asignar)
+    entry_codigo.pack()
+    
+    # Origen
+    etiqueta_origen = tk.Label(ventana_asignar, text="Origen:", bg="lavenderblush")
+    etiqueta_origen.pack(pady=5)
+    entry_origen = tk.Entry(ventana_asignar)
+    entry_origen.pack()
+    
+    # Destino
+    etiqueta_destino = tk.Label(ventana_asignar, text="Destino:", bg="lavenderblush")
+    etiqueta_destino.pack(pady=5)
+    entry_destino = tk.Entry(ventana_asignar)
+    entry_destino.pack()
+    
+    # Precio
+    etiqueta_precio = tk.Label(ventana_asignar, text="Precio del boleto:", bg="lavenderblush")
+    etiqueta_precio.pack(pady=5)
+    entry_precio = tk.Entry(ventana_asignar)
+    entry_precio.pack()
+    
+    def confirmar_asignacion():
+        # Obtener valores
+        texto_vuelo = entry_vuelo.get().strip()
+        codigo = entry_codigo.get().strip().upper()  # <-- Convertir a mayúsculas
+        origen = entry_origen.get().strip()
+        destino = entry_destino.get().strip()
+        texto_precio = entry_precio.get().strip()
+        
+        # Validar que no estén vacíos
+        if texto_vuelo == "" or codigo == "" or origen == "" or destino == "" or texto_precio == "":
+            messagebox.showerror("Error", "Todos los campos son obligatorios.")
+            return
+        
+        # Validar formato del código (3 letras + 3 números)
+        if len(codigo) != 6:
+            messagebox.showerror("Error", "El código debe tener exactamente 6 caracteres (3 letras + 3 números).\nEjemplo: CM123")
+            return
+        
+        # Verificar que los primeros 3 son letras
+        if not codigo[:3].isalpha():
+            messagebox.showerror("Error", "Los primeros 3 caracteres del código deben ser letras.\nEjemplo: CM123")
+            return
+        
+        # Verificar que los últimos 3 son números
+        if not codigo[3:].isdigit():
+            messagebox.showerror("Error", "Los últimos 3 caracteres del código deben ser números.\nEjemplo: CM123")
+            return
+        
+        # Validar número de vuelo
+        try:
+            num_vuelo = int(texto_vuelo)
+        except:
+            messagebox.showerror("Error", "El número de vuelo debe ser un entero.")
+            return
+        
+        if num_vuelo < 1 or num_vuelo > len(vuelos):
+            messagebox.showerror("Error", f"El vuelo debe estar entre 1 y {len(vuelos)}.")
+            return
+        
+        # Validar precio
+        try:
+            precio = float(texto_precio)
+            if precio <= 0:
+                messagebox.showerror("Error", "El precio debe ser mayor a 0.")
+                return
+        except:
+            messagebox.showerror("Error", "El precio debe ser un número válido.")
+            return
+        
+        # Asignar datos al vuelo (índice es num_vuelo - 1)
+        indice = num_vuelo - 1
+        vuelos[indice][0] = codigo      # Código (ya en mayúsculas)
+        vuelos[indice][1] = origen      # Origen
+        vuelos[indice][2] = destino     # Destino
+        vuelos[indice][3] = precio      # Precio
+        
+        messagebox.showinfo(
+            "Éxito",
+            f"Datos asignados exitosamente al vuelo {num_vuelo}:\n"
+            f"Código: {codigo}\n"
+            f"Ruta: {origen} → {destino}\n"
+            f"Precio: ${precio}"
+        )
+        ventana_asignar.destroy()
+    
+    boton_asignar = tk.Button(
+        ventana_asignar, text="Asignar",
+        command=confirmar_asignacion,
+        bg="pink", activebackground="hotpink"
+    )
+    boton_asignar.pack(pady=12)
+    
+    boton_cancelar = tk.Button(
+        ventana_asignar, text="Cancelar",
+        command=ventana_asignar.destroy,
         bg="light gray"
     )
     boton_cancelar.pack(pady=5)
@@ -117,7 +238,7 @@ boton1 = tk.Button(frame_botones, text="1. Crear nuevo vuelo", width=34,
 boton1.pack(pady=5)
 
 boton2 = tk.Button(frame_botones, text="2. Asignar origen/destino y precio a vuelo", width=34,
-                 command=lambda: None,
+                 command=asignar_datos_vuelo,
                  bg="pink", activebackground="hotpink",
                  fg="dark slate gray", activeforeground="dark slate gray", bd=0)
 boton2.pack(pady=5)
