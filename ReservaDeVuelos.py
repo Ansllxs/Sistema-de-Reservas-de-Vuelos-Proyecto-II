@@ -651,6 +651,159 @@ def ver_estadisticas_recaudacion():
     )
     boton_cerrar.pack(pady=5)
 
+def buscar_vuelos_por_destino():
+    # Verificar que hay vuelos
+    if len(vuelos) == 0:
+        messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
+        return
+    
+    # Crear ventana nueva
+    ventana_buscar = tk.Toplevel(ventana)
+    ventana_buscar.title("Buscar vuelos por destino")
+    ventana_buscar.geometry("400x180")
+    ventana_buscar.configure(bg="lavenderblush")
+    
+    # Campo: Destino
+    etiqueta_destino = tk.Label(ventana_buscar, text="Ingresa el destino (ej: Bogotá):", bg="lavenderblush")
+    etiqueta_destino.pack(pady=5)
+    entry_destino = tk.Entry(ventana_buscar)
+    entry_destino.pack()
+    
+    def buscar_destino():
+        # Paso 1: Obtener el destino ingresado
+        destino_buscar = entry_destino.get().strip()
+        
+        # Paso 2: Validar que no esté vacío
+        if destino_buscar == "":
+            messagebox.showerror("Error", "Debes ingresar un destino.")
+            return
+        
+        # Paso 3: Buscar vuelos que coincidan
+        vuelos_encontrados = []  # Lista para guardar los vuelos que coincidan
+        
+        # Recorrer todos los vuelos
+        for indice in range(len(vuelos)):
+            vuelo = vuelos[indice]
+            destino_vuelo = vuelo[2]  # El destino está en la posición 2
+            
+            # Verificar si el destino coincide (ignorar mayúsculas/minúsculas)
+            if destino_vuelo.upper() == destino_buscar.upper():
+                # Calcular asientos disponibles (contar los 0 en la matriz)
+                matriz = vuelo[4]
+                asientos_disponibles = 0
+                
+                for fila in matriz:
+                    for asiento in fila:
+                        if asiento == 0:  # 0 = libre
+                            asientos_disponibles = asientos_disponibles + 1
+                
+                # Guardar el número de vuelo y asientos disponibles
+                num_vuelo = indice + 1  # Convertir índice a número de vuelo
+                vuelos_encontrados.append([num_vuelo, asientos_disponibles])
+        
+        # Paso 4: Mostrar resultados
+        if len(vuelos_encontrados) == 0:
+            # No se encontraron vuelos
+            messagebox.showinfo(
+                "Sin resultados",
+                f"No hay vuelos hacia \"{destino_buscar}\"."
+            )
+        else:
+            # Construir mensaje con los vuelos encontrados
+            mensaje = f"Destino: {destino_buscar}\n\n"
+            mensaje = mensaje + f"Vuelos hacia \"{destino_buscar}\":\n"
+            
+            for vuelo_info in vuelos_encontrados:
+                num = vuelo_info[0]
+                disponibles = vuelo_info[1]
+                mensaje = mensaje + f"- Vuelo {num} (asientos disponibles: {disponibles})\n"
+            
+            messagebox.showinfo("Vuelos encontrados", mensaje)
+    
+    # Botón para buscar
+    boton_buscar = tk.Button(
+        ventana_buscar, text="Buscar",
+        command=buscar_destino,
+        bg="pink", activebackground="hotpink"
+    )
+    boton_buscar.pack(pady=12)
+    
+    # Botón para cerrar
+    boton_cerrar = tk.Button(
+        ventana_buscar, text="Cerrar",
+        command=ventana_buscar.destroy,
+        bg="light gray"
+    )
+    boton_cerrar.pack(pady=5)
+
+def ver_vuelos_disponibles():
+    # Verificar que hay vuelos
+    if len(vuelos) == 0:
+        messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
+        return
+    
+    # Crear ventana nueva con scroll
+    ventana_vuelos = tk.Toplevel(ventana)
+    ventana_vuelos.title("Vuelos disponibles")
+    ventana_vuelos.geometry("500x400")
+    ventana_vuelos.configure(bg="lavenderblush")
+    
+    # Crear un Text widget para mostrar múltiples vuelos
+    texto = tk.Text(ventana_vuelos, width=60, height=20, bg="white", fg="black")
+    texto.pack(pady=10, padx=10)
+    
+    # Construir la lista de vuelos
+    mensaje = "--- Vuelos disponibles ---\n\n"
+    vuelos_con_datos = 0  # Contador de vuelos que tienen datos
+    
+    # Recorrer todos los vuelos
+    for indice in range(len(vuelos)):
+        vuelo = vuelos[indice]
+        codigo = vuelo[0]
+        origen = vuelo[1]
+        destino = vuelo[2]
+        precio = vuelo[3]
+        matriz = vuelo[4]
+        
+        # Solo mostrar vuelos que tengan datos asignados
+        if codigo != "" and origen != "" and destino != "":
+            vuelos_con_datos = vuelos_con_datos + 1
+            
+            # Calcular asientos totales
+            num_filas = len(matriz)
+            num_columnas = len(matriz[0]) if num_filas > 0 else 0
+            asientos_totales = num_filas * num_columnas
+            
+            # Contar asientos libres (los que tienen 0)
+            asientos_libres = 0
+            for fila in matriz:
+                for asiento in fila:
+                    if asiento == 0:
+                        asientos_libres = asientos_libres + 1
+            
+            # Agregar información del vuelo al mensaje
+            num_vuelo = indice + 1
+            mensaje = mensaje + f"Vuelo {num_vuelo} - {codigo} {origen} → {destino}\n"
+            mensaje = mensaje + f"Precio: {precio}\n"
+            mensaje = mensaje + f"Asientos disponibles: {asientos_libres}\n\n"
+    
+    # Si no hay vuelos con datos asignados
+    if vuelos_con_datos == 0:
+        mensaje = "No hay vuelos con datos asignados.\n"
+        mensaje = mensaje + "Usa la opción 2 para asignar origen/destino a los vuelos."
+    
+    # Mostrar el mensaje en el Text widget
+    texto.insert("1.0", mensaje)
+    texto.config(state="disabled")  # Hacer que no se pueda editar
+    
+    # Botón para cerrar
+    boton_cerrar = tk.Button(
+        ventana_vuelos, text="Cerrar",
+        command=ventana_vuelos.destroy,
+        bg="light gray"
+    )
+    boton_cerrar.pack(pady=5)
+
 # --- Ventana principal---
 ventana = tk.Tk()
 ventana.title("Sistema de Reservas de Vuelos")
@@ -716,13 +869,13 @@ boton7 = tk.Button(frame_botones, text="7. Ver estadísticas de recaudación", w
 boton7.pack(pady=5)
 
 boton8 = tk.Button(frame_botones, text="8. Buscar vuelos por destino", width=34,
-                 command=lambda: None,
+                 command=buscar_vuelos_por_destino,
                  bg="pink", activebackground="hotpink",
                  fg="dark slate gray", activeforeground="dark slate gray", bd=0)
 boton8.pack(pady=5)
 
 boton9 = tk.Button(frame_botones, text="9. Ver vuelos disponibles", width=34,
-                 command=lambda: None,
+                 command=ver_vuelos_disponibles,
                  bg="pink", activebackground="hotpink",
                  fg="dark slate gray", activeforeground="dark slate gray", bd=0)
 boton9.pack(pady=5)
