@@ -839,7 +839,7 @@ boton2 = tk.Button(frame_botones, text="2. Asignar origen/destino y precio a vue
 boton2.pack(pady=5)
 
 boton3 = tk.Button(frame_botones, text="3. Ver estado de un vuelo", width=34,
-                 command=None,
+                 command=lambda: None,
                  bg="pink", activebackground="hotpink",
                  fg="dark slate gray", activeforeground="dark slate gray", bd=0)
 boton3.pack(pady=5)
