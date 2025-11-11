@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-
-
+import random
 
 # ---------- Datos ----------
 # Cada vuelo: [codigo, origen, destino, precio, matriz_asientos, cantidad_vendidos]
@@ -859,6 +858,365 @@ def ver_vuelos_disponibles():
     )
     boton_cerrar.pack(pady=5)
 
+def reservar_asientos_consecutivos():
+    # Verificar que hay vuelos
+    if len(vuelos) == 0:
+        messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
+        return
+    
+    # Crear ventana nueva
+    ventana_consecutivos = tk.Toplevel(ventana)
+    ventana_consecutivos.title("Reservar asientos consecutivos")
+    ventana_consecutivos.geometry("360x300")
+    ventana_consecutivos.configure(bg="lavenderblush")
+    
+    # Campo: Número de vuelo
+    etiqueta_vuelo = tk.Label(ventana_consecutivos, text=f"Número de vuelo (1 a {len(vuelos)}):", bg="lavenderblush")
+    etiqueta_vuelo.pack(pady=5)
+    entry_vuelo = tk.Entry(ventana_consecutivos)
+    entry_vuelo.pack()
+    
+    # Campo: Letra de fila
+    etiqueta_fila = tk.Label(ventana_consecutivos, text="Letra de fila (ej: A, B, C...):", bg="lavenderblush")
+    etiqueta_fila.pack(pady=5)
+    entry_fila = tk.Entry(ventana_consecutivos)
+    entry_fila.pack()
+    
+    # Campo: Columna inicial
+    etiqueta_columna = tk.Label(ventana_consecutivos, text="Columna inicial (ej: 1, 2, 3...):", bg="lavenderblush")
+    etiqueta_columna.pack(pady=5)
+    entry_columna = tk.Entry(ventana_consecutivos)
+    entry_columna.pack()
+    
+    # Campo: Cantidad de asientos
+    etiqueta_cantidad = tk.Label(ventana_consecutivos, text="Cantidad de asientos:", bg="lavenderblush")
+    etiqueta_cantidad.pack(pady=5)
+    entry_cantidad = tk.Entry(ventana_consecutivos)
+    entry_cantidad.pack()
+    
+    def confirmar_reserva_consecutiva():
+        # Paso 1: Obtener valores
+        texto_vuelo = entry_vuelo.get().strip()
+        letra_fila = entry_fila.get().strip().upper()
+        texto_columna = entry_columna.get().strip()
+        texto_cantidad = entry_cantidad.get().strip()
+        
+        # Paso 2: Validar que no estén vacíos
+        if texto_vuelo == "" or letra_fila == "" or texto_columna == "" or texto_cantidad == "":
+            messagebox.showerror("Error", "Todos los campos son obligatorios.")
+            return
+        
+        # Paso 3: Validar número de vuelo
+        try:
+            num_vuelo = int(texto_vuelo)
+        except:
+            messagebox.showerror("Error", "El número de vuelo debe ser un entero.")
+            return
+        
+        if num_vuelo < 1 or num_vuelo > len(vuelos):
+            messagebox.showerror("Error", f"El vuelo debe estar entre 1 y {len(vuelos)}.")
+            return
+        
+        # Paso 4: Obtener el vuelo
+        indice_vuelo = num_vuelo - 1
+        vuelo = vuelos[indice_vuelo]
+        
+        # Verificar que el vuelo tenga datos
+        if vuelo[0] == "" or vuelo[1] == "" or vuelo[2] == "":
+            messagebox.showerror("Error", "Este vuelo no tiene origen/destino asignado.\nUsa la opción 2 primero.")
+            return
+        
+        # Paso 5: Validar letra de fila
+        if len(letra_fila) != 1 or not letra_fila.isalpha():
+            messagebox.showerror("Error", "La fila debe ser una sola letra (A, B, C...).")
+            return
+        
+        # Convertir letra a índice
+        indice_fila = ord(letra_fila) - ord('A')
+        
+        # Paso 6: Validar columna inicial
+        try:
+            columna_inicial = int(texto_columna)
+        except:
+            messagebox.showerror("Error", "La columna debe ser un número.")
+            return
+        
+        if columna_inicial < 1:
+            messagebox.showerror("Error", "La columna debe ser mayor o igual a 1.")
+            return
+        
+        # Paso 7: Validar cantidad
+        try:
+            cantidad = int(texto_cantidad)
+        except:
+            messagebox.showerror("Error", "La cantidad debe ser un número.")
+            return
+        
+        if cantidad < 1:
+            messagebox.showerror("Error", "La cantidad debe ser mayor o igual a 1.")
+            return
+        
+        # Paso 8: Obtener matriz
+        matriz = vuelo[4]
+        num_filas = len(matriz)
+        num_columnas = len(matriz[0]) if num_filas > 0 else 0
+        
+        # Validar que la fila existe
+        if indice_fila < 0 or indice_fila >= num_filas:
+            messagebox.showerror("Error", f"La fila {letra_fila} no existe.\nEste vuelo tiene filas de A hasta {chr(num_filas - 1 + ord('A'))}.")
+            return
+        
+        # Paso 9: Verificar que todos los asientos consecutivos existen y están libres
+        indice_columna_inicial = columna_inicial - 1
+        
+        # Lista para guardar los asientos a reservar
+        asientos_a_reservar = []
+        
+        for i in range(cantidad):
+            indice_columna = indice_columna_inicial + i
+            
+            # Verificar que la columna existe
+            if indice_columna >= num_columnas:
+                messagebox.showerror("Error", f"No hay suficientes asientos consecutivos.\nLa fila solo tiene {num_columnas} columnas.")
+                return
+            
+            # Verificar que el asiento está libre
+            if matriz[indice_fila][indice_columna] == 1:
+                numero_columna = indice_columna + 1
+                messagebox.showerror("Error", f"No es posible reservar los asientos consecutivos.\nEl asiento {letra_fila}{numero_columna} está ocupado.")
+                return
+            
+            # Guardar el asiento
+            asientos_a_reservar.append(indice_columna)
+        
+        # Paso 10: Si llegamos aquí, todos los asientos están libres, reservarlos
+        asientos_reservados_texto = ""
+        
+        for indice_columna in asientos_a_reservar:
+            matriz[indice_fila][indice_columna] = 1
+            vuelo[5] = vuelo[5] + 1
+            numero_columna = indice_columna + 1
+            asientos_reservados_texto = asientos_reservados_texto + f"{letra_fila}{numero_columna} "
+        
+        # Paso 11: Mostrar éxito
+        messagebox.showinfo(
+            "Éxito",
+            f"¡Reservados exitosamente: {asientos_reservados_texto}!"
+        )
+        ventana_consecutivos.destroy()
+    
+    # Botón para reservar
+    boton_reservar = tk.Button(
+        ventana_consecutivos, text="Reservar",
+        command=confirmar_reserva_consecutiva,
+        bg="pink", activebackground="hotpink"
+    )
+    boton_reservar.pack(pady=12)
+    
+    # Botón para cancelar
+    boton_cancelar = tk.Button(
+        ventana_consecutivos, text="Cancelar",
+        command=ventana_consecutivos.destroy,
+        bg="light gray"
+    )
+    boton_cancelar.pack(pady=5)
+
+def simular_venta_masiva():
+    # Verificar que hay vuelos
+    if len(vuelos) == 0:
+        messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
+        return
+    
+    # Crear ventana nueva
+    ventana_simular = tk.Toplevel(ventana)
+    ventana_simular.title("Simular venta masiva")
+    ventana_simular.geometry("360x180")
+    ventana_simular.configure(bg="lavenderblush")
+    
+    # Campo: Porcentaje
+    etiqueta_porcentaje = tk.Label(ventana_simular, text="Porcentaje de ocupación (1 a 100):", bg="lavenderblush")
+    etiqueta_porcentaje.pack(pady=5)
+    entry_porcentaje = tk.Entry(ventana_simular)
+    entry_porcentaje.pack()
+    
+    def confirmar_simulacion():
+        # Paso 1: Obtener el porcentaje
+        texto_porcentaje = entry_porcentaje.get().strip()
+        
+        # Paso 2: Validar que no esté vacío
+        if texto_porcentaje == "":
+            messagebox.showerror("Error", "Debes ingresar un porcentaje.")
+            return
+        
+        # Paso 3: Validar que sea un número
+        try:
+            porcentaje = int(texto_porcentaje)
+        except:
+            messagebox.showerror("Error", "El porcentaje debe ser un número entero.")
+            return
+        
+        # Paso 4: Validar rango (1 a 100)
+        if porcentaje < 1 or porcentaje > 100:
+            messagebox.showerror("Error", "El porcentaje debe estar entre 1 y 100.")
+            return
+        
+        # Necesitamos importar random al inicio del archivo
+        import random
+        
+        # Paso 5: Recorrer cada vuelo y simular reservas
+        for vuelo in vuelos:
+            # Solo procesar vuelos con datos asignados
+            if vuelo[0] == "" or vuelo[1] == "" or vuelo[2] == "":
+                continue
+            
+            matriz = vuelo[4]
+            num_filas = len(matriz)
+            num_columnas = len(matriz[0]) if num_filas > 0 else 0
+            asientos_totales = num_filas * num_columnas
+            
+            # Calcular cuántos asientos deben estar ocupados
+            asientos_objetivo = int((porcentaje / 100.0) * asientos_totales)
+            
+            # Contar cuántos ya están ocupados
+            asientos_ocupados = 0
+            for fila in matriz:
+                for asiento in fila:
+                    if asiento == 1:
+                        asientos_ocupados = asientos_ocupados + 1
+            
+            # Si ya tiene más del porcentaje, no hacer nada
+            if asientos_ocupados >= asientos_objetivo:
+                continue
+            
+            # Calcular cuántos asientos faltan por reservar
+            asientos_a_reservar = asientos_objetivo - asientos_ocupados
+            
+            # Crear lista de asientos libres
+            asientos_libres = []
+            for fila in range(num_filas):
+                for columna in range(num_columnas):
+                    if matriz[fila][columna] == 0:
+                        asientos_libres.append([fila, columna])
+            
+            # Mezclar la lista aleatoriamente
+            random.shuffle(asientos_libres)
+            
+            # Reservar los primeros N asientos de la lista mezclada
+            reservados = 0
+            for i in range(len(asientos_libres)):
+                if reservados >= asientos_a_reservar:
+                    break
+                
+                fila = asientos_libres[i][0]
+                columna = asientos_libres[i][1]
+                matriz[fila][columna] = 1
+                vuelo[5] = vuelo[5] + 1
+                reservados = reservados + 1
+        
+        # Paso 6: Mostrar mensaje de éxito
+        messagebox.showinfo(
+            "Éxito",
+            f"Simulación completada.\n\n"
+            f"Se han reservado asientos aleatoriamente\n"
+            f"hasta alcanzar el {porcentaje}% de ocupación\n"
+            f"en todos los vuelos.\n\n"
+            f"Verifica el resultado con las opciones 3 o 6."
+        )
+        ventana_simular.destroy()
+    
+    # Botón para simular
+    boton_simular = tk.Button(
+        ventana_simular, text="Simular",
+        command=confirmar_simulacion,
+        bg="pink", activebackground="hotpink"
+    )
+    boton_simular.pack(pady=12)
+    
+    # Botón para cancelar
+    boton_cancelar = tk.Button(
+        ventana_simular, text="Cancelar",
+        command=ventana_simular.destroy,
+        bg="light gray"
+    )
+    boton_cancelar.pack(pady=5)
+
+def reiniciar_vuelo():
+    # Verificar que hay vuelos
+    if len(vuelos) == 0:
+        messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
+        return
+    
+    # Crear ventana nueva
+    ventana_reiniciar = tk.Toplevel(ventana)
+    ventana_reiniciar.title("Reiniciar vuelo")
+    ventana_reiniciar.geometry("360x150")
+    ventana_reiniciar.configure(bg="lavenderblush")
+    
+    # Campo: Número de vuelo
+    etiqueta_vuelo = tk.Label(ventana_reiniciar, text=f"Número de vuelo (1 a {len(vuelos)}):", bg="lavenderblush")
+    etiqueta_vuelo.pack(pady=5)
+    entry_vuelo = tk.Entry(ventana_reiniciar)
+    entry_vuelo.pack()
+    
+    def confirmar_reinicio():
+        # Paso 1: Obtener el número de vuelo
+        texto_vuelo = entry_vuelo.get().strip()
+        
+        # Paso 2: Validar que no esté vacío
+        if texto_vuelo == "":
+            messagebox.showerror("Error", "Debes ingresar el número de vuelo.")
+            return
+        
+        # Paso 3: Validar que sea un número
+        try:
+            num_vuelo = int(texto_vuelo)
+        except:
+            messagebox.showerror("Error", "El número de vuelo debe ser un entero.")
+            return
+        
+        # Paso 4: Verificar que el vuelo existe
+        if num_vuelo < 1 or num_vuelo > len(vuelos):
+            messagebox.showerror("Error", f"El vuelo debe estar entre 1 y {len(vuelos)}.")
+            return
+        
+        # Paso 5: Obtener el vuelo
+        indice_vuelo = num_vuelo - 1
+        vuelo = vuelos[indice_vuelo]
+        matriz = vuelo[4]
+        
+        # Paso 6: Reiniciar todos los asientos (ponerlos en 0)
+        for fila in range(len(matriz)):
+            for columna in range(len(matriz[0])):
+                matriz[fila][columna] = 0
+        
+        # Paso 7: Reiniciar contador de ventas
+        vuelo[5] = 0
+        
+        # Paso 8: Mostrar mensaje de éxito
+        messagebox.showinfo(
+            "Éxito",
+            f"El vuelo {num_vuelo} ha sido reiniciado exitosamente.\n\n"
+            f"Todos los asientos están ahora libres."
+        )
+        ventana_reiniciar.destroy()
+    
+    # Botón para reiniciar
+    boton_reiniciar = tk.Button(
+        ventana_reiniciar, text="Reiniciar",
+        command=confirmar_reinicio,
+        bg="pink", activebackground="hotpink"
+    )
+    boton_reiniciar.pack(pady=12)
+    
+    # Botón para cancelar
+    boton_cancelar = tk.Button(
+        ventana_reiniciar, text="Cancelar",
+        command=ventana_reiniciar.destroy,
+        bg="light gray"
+    )
+    boton_cancelar.pack(pady=5)
+
+
 # --- Ventana principal---
 ventana = tk.Tk()
 ventana.title("Sistema de Reservas de Vuelos")
@@ -936,19 +1294,19 @@ boton9 = tk.Button(frame_botones, text="9. Ver vuelos disponibles", width=34,
 boton9.pack(pady=5)
 
 boton10 = tk.Button(frame_botones, text="10. Reservar varios asientos consecutivos", width=34,
-                  command=lambda: None,
+                  command=reservar_asientos_consecutivos,
                   bg="pink", activebackground="hotpink",
                   fg="dark slate gray", activeforeground="dark slate gray", bd=0)
 boton10.pack(pady=5)
 
 boton11 = tk.Button(frame_botones, text="11. Simular venta masiva", width=34,
-                  command=lambda: None,
+                  command=simular_venta_masiva,
                   bg="pink", activebackground="hotpink",
                   fg="dark slate gray", activeforeground="dark slate gray", bd=0)
 boton11.pack(pady=5)
 
 boton12 = tk.Button(frame_botones, text="12. Reiniciar vuelo", width=34,
-                  command=lambda: None,
+                  command=reiniciar_vuelo,
                   bg="pink", activebackground="hotpink",
                   fg="dark slate gray", activeforeground="dark slate gray", bd=0)
 boton12.pack(pady=5)
