@@ -67,7 +67,7 @@ def crear_vuelo():
         vuelo_nuevo = ["", "", "", 0.0, matriz_asientos, 0]
         vuelos.append(vuelo_nuevo)
 
-        numero_interno_vuelo = len(vuelos)  # 1,2,3,...
+        numero_interno_vuelo = len(vuelos) 
         messagebox.showinfo(
             "Éxito",
             f"¡Vuelo {numero_interno_vuelo} creado exitosamente!\n"
@@ -407,6 +407,12 @@ def ver_estado_vuelo():
     boton_cerrar.pack(pady=5)
 
 
+#---------------------------------
+#|                               |
+#|  OPCION #4- RESERVAR ASIENTO  |
+#|                               |
+#---------------------------------
+
 def reservar_asiento():
     if len(vuelos) == 0:
         messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
@@ -526,6 +532,13 @@ def reservar_asiento():
     )
     boton_cancelar.pack(pady=5)
 
+
+#---------------------------------
+#|                               |
+#|  OPCION #5- CANCELAR RESERVA  |
+#|                               |
+#---------------------------------
+
 def cancelar_reserva():
     if len(vuelos) == 0:
         messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
@@ -638,6 +651,12 @@ def cancelar_reserva():
     boton_cerrar.pack(pady=5)
 
 
+#---------------------------------
+#|                               |
+#|  OPCION #6- ESTA OCUPACION    |
+#|                               |
+#---------------------------------
+
 def ver_estadisticas_ocupacion():
     if len(vuelos) == 0:
         messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
@@ -719,6 +738,11 @@ def ver_estadisticas_ocupacion():
     )
     boton_cerrar.pack(pady=5)
 
+#---------------------------------
+#|                               |
+#|  OPCION #7- ESTA RECAUDACION  |
+#|                               |
+#---------------------------------
 
 def ver_estadisticas_recaudacion():
     if len(vuelos) == 0:
@@ -787,6 +811,13 @@ def ver_estadisticas_recaudacion():
         bg="light gray"
     )
     boton_cerrar.pack(pady=5)
+
+
+#----------------------------------
+#|                                |
+#|  OPCION #8- VUELO POR DESTINO  |
+#|                                |
+#----------------------------------
 
 def buscar_vuelos_por_destino():
     if len(vuelos) == 0:
@@ -898,6 +929,13 @@ def buscar_vuelos_por_destino():
                             bg="light gray", width=15)
     boton_cerrar.pack(pady=5)
 
+
+#---------------------------------
+#|                                |
+#|  OPCION #9- VUELOS AVAILABLES  |
+#|                                |
+#---------------------------------
+
 def ver_vuelos_disponibles():
     if len(vuelos) == 0:
         messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
@@ -957,6 +995,12 @@ def ver_vuelos_disponibles():
     )
     boton_cerrar.pack(pady=5)
 
+
+#---------------------------------------
+#|                                     |
+#|  OPCION #10- RESERVAR CONSECUTIVOS  |
+#|                                     |
+#---------------------------------------
 def reservar_asientos_consecutivos():
     if len(vuelos) == 0:
         messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
@@ -1095,6 +1139,12 @@ def reservar_asientos_consecutivos():
     )
     boton_cancelar.pack(pady=5)
 
+
+#---------------------------------
+#|                               |
+#|  OPCION #11- VENTA MASIVA     |
+#|                               |
+#---------------------------------
 def simular_venta_masiva():
     if len(vuelos) == 0:
         messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
@@ -1194,6 +1244,12 @@ def simular_venta_masiva():
     )
     boton_cancelar.pack(pady=5)
 
+
+#---------------------------------
+#|                               |
+#|  OPCION #12- REINICIAR VUELO  |
+#|                               |
+#---------------------------------
 def reiniciar_vuelo():
     if len(vuelos) == 0:
         messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
