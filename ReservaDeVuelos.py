@@ -2,12 +2,16 @@ import tkinter as tk
 from tkinter import messagebox
 import random
 
-# ---------- Datos ----------
-# Cada vuelo: [codigo, origen, destino, precio, matriz_asientos, cantidad_vendidos]
-vuelos = []          #lista global de vuelos
+# ---------- Datos globales----------
+vuelos = []          
 MAX_FILAS = 50       
 MAX_COLUMNAS = 20    
 
+#----------------------------
+#|                          |
+#|  OPCION #1- CREAR VUELO  |
+#|                          |
+#----------------------------
 def crear_vuelo():
     ventana_crear = tk.Toplevel(ventana)
     ventana_crear.title("Crear nuevo vuelo")
@@ -60,7 +64,6 @@ def crear_vuelo():
             matriz_asientos.append(fila_asientos)
 
         # Agregar vuelo vacío a la lista global
-        # [codigo, origen, destino, precio, matriz_asientos, cantidad_vendidos]
         vuelo_nuevo = ["", "", "", 0.0, matriz_asientos, 0]
         vuelos.append(vuelo_nuevo)
 
@@ -87,6 +90,12 @@ def crear_vuelo():
         bg="light gray"
     )
     boton_cancelar.pack(pady=5)
+
+#------------------------------
+#|                            |
+#|  OPCION #2- ASIGNAR VUELO  |
+#|                            |
+#------------------------------
 
 def asignar_datos_vuelo():
     if len(vuelos) == 0:
@@ -129,19 +138,16 @@ def asignar_datos_vuelo():
     entry_precio.pack()
     
     def confirmar_asignacion():
-        # Obtener valores
         texto_vuelo = entry_vuelo.get().strip()
         codigo = entry_codigo.get().strip().upper()
         origen = entry_origen.get().strip()
         destino = entry_destino.get().strip()
         texto_precio = entry_precio.get().strip()
         
-        # Validar que no estén vacíos
         if texto_vuelo == "" or codigo == "" or origen == "" or destino == "" or texto_precio == "":
             messagebox.showerror("Error", "Todos los campos son obligatorios.")
             return
         
-        # Validar número de vuelo
         try:
             num_vuelo = int(texto_vuelo)
         except:
@@ -152,11 +158,9 @@ def asignar_datos_vuelo():
             messagebox.showerror("Error", f"El vuelo debe estar entre 1 y {len(vuelos)}.")
             return
         
-        # Obtener el índice del vuelo
         indice = num_vuelo - 1
         vuelo = vuelos[indice]
         
-        # NUEVA VALIDACIÓN: Verificar si el vuelo ya tiene datos asignados
         if vuelo[0] != "" or vuelo[1] != "" or vuelo[2] != "":
             messagebox.showerror(
                 "Error", 
@@ -168,22 +172,18 @@ def asignar_datos_vuelo():
             )
             return
         
-        # Validar formato del código (3 letras + 3 números)
         if len(codigo) != 6:
             messagebox.showerror("Error", "El código debe tener exactamente 6 caracteres (3 letras + 3 números).\nEjemplo: CM123")
             return
         
-        # Verificar que los primeros 3 son letras
         if not codigo[:3].isalpha():
             messagebox.showerror("Error", "Los primeros 3 caracteres del código deben ser letras.\nEjemplo: CM123")
             return
         
-        # Verificar que los últimos 3 son números
         if not codigo[3:].isdigit():
             messagebox.showerror("Error", "Los últimos 3 caracteres del código deben ser números.\nEjemplo: CM123")
             return
         
-        # Validar precio
         try:
             precio = float(texto_precio)
             if precio <= 0:
@@ -193,7 +193,6 @@ def asignar_datos_vuelo():
             messagebox.showerror("Error", "El precio debe ser un número válido.")
             return
         
-        # Asignar datos al vuelo
         vuelos[indice][0] = codigo
         vuelos[indice][1] = origen
         vuelos[indice][2] = destino
@@ -221,6 +220,191 @@ def asignar_datos_vuelo():
         bg="light gray"
     )
     boton_cancelar.pack(pady=5)
+
+
+#--------------------------------
+#|                              |
+#|  OPCION #3- ESTADO DE VUELO  |
+#|                              |
+#--------------------------------
+
+def ver_estado_vuelo():
+    if len(vuelos) == 0:
+        messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
+        return
+    
+    ventana_estado = tk.Toplevel(ventana)
+    ventana_estado.title("Ver estado del vuelo")
+    ventana_estado.geometry("400x200")
+    ventana_estado.configure(bg="lavenderblush")
+    
+    etiqueta_vuelo = tk.Label(ventana_estado, text=f"Número de vuelo (1 a {len(vuelos)}):", bg="lavenderblush")
+    etiqueta_vuelo.pack(pady=5)
+    entry_vuelo = tk.Entry(ventana_estado)
+    entry_vuelo.pack()
+    
+    def mostrar_estado():
+        texto_vuelo = entry_vuelo.get().strip()
+        
+        if texto_vuelo == "":
+            messagebox.showerror("Error", "Debes ingresar el número de vuelo.")
+            return
+        
+        try:
+            num_vuelo = int(texto_vuelo)
+        except:
+            messagebox.showerror("Error", "El número de vuelo debe ser un entero.")
+            return
+        
+        if num_vuelo < 1 or num_vuelo > len(vuelos):
+            messagebox.showerror("Error", f"El vuelo debe estar entre 1 y {len(vuelos)}.")
+            return
+        
+        indice_vuelo = num_vuelo - 1
+        vuelo = vuelos[indice_vuelo]
+        
+        if vuelo[0] == "" or vuelo[1] == "" or vuelo[2] == "":
+            messagebox.showerror("Error", "Este vuelo no tiene origen/destino asignado.\nUsa la opción 2 primero.")
+            return
+        
+        codigo = vuelo[0]
+        origen = vuelo[1]
+        destino = vuelo[2]
+        matriz = vuelo[4]
+        num_filas = len(matriz)
+        num_columnas = len(matriz[0]) if num_filas > 0 else 0
+        
+        asientos_totales = num_filas * num_columnas
+        asientos_ocupados = 0
+        for fila in matriz:
+            for asiento in fila:
+                if asiento == 1:
+                    asientos_ocupados = asientos_ocupados + 1
+        
+        porcentaje = (asientos_ocupados / asientos_totales * 100) if asientos_totales > 0 else 0
+        
+        ventana_avion = tk.Toplevel(ventana)
+        ventana_avion.title(f"Estado del Vuelo {num_vuelo} - {codigo}")
+        ventana_avion.configure(bg="lavenderblush")
+        
+        titulo = tk.Label(ventana_avion,
+                         text=f"Vuelo {num_vuelo} - {codigo}\n{origen} → {destino}",
+                         bg="lavenderblush",
+                         font=("Arial", 12, "bold"),
+                         fg="dark slate gray")
+        titulo.pack(pady=10)
+        
+        frame_canvas = tk.Frame(ventana_avion, bg="lavenderblush")
+        frame_canvas.pack(pady=10, padx=10)
+        
+        scrollbar_v = tk.Scrollbar(frame_canvas, orient="vertical")
+        scrollbar_h = tk.Scrollbar(frame_canvas, orient="horizontal")
+        
+        tamano_asiento = 35  #TAMANO DE CADA CUADRITO
+        ancho_canvas = min(num_columnas * tamano_asiento + 50, 700)
+        alto_canvas = min(num_filas * tamano_asiento + 50, 500)
+        
+        canvas = tk.Canvas(frame_canvas,
+                          width=ancho_canvas,
+                          height=alto_canvas,
+                          bg="white",
+                          yscrollcommand=scrollbar_v.set,
+                          xscrollcommand=scrollbar_h.set)
+        
+        scrollbar_v.config(command=canvas.yview)
+        scrollbar_h.config(command=canvas.xview)
+        
+        scrollbar_v.pack(side="right", fill="y")
+        scrollbar_h.pack(side="bottom", fill="x")
+        canvas.pack(side="left")
+        
+        canvas_ancho = num_columnas * tamano_asiento + 50
+        canvas_alto = num_filas * tamano_asiento + 50
+        canvas.config(scrollregion=(0, 0, canvas_ancho, canvas_alto))
+        
+        margen_x = 25
+        margen_y = 25
+        
+        for fila in range(num_filas):
+            for columna in range(num_columnas):
+                x1 = margen_x + columna * tamano_asiento
+                y1 = margen_y + fila * tamano_asiento
+                x2 = x1 + tamano_asiento - 5
+                y2 = y1 + tamano_asiento - 5
+                
+                if matriz[fila][columna] == 0:
+                    color = "#90EE90"  
+                    color_borde = "#228B22"  
+                else:
+                    color = "#FFB6C6"  # R
+                    color_borde = "#DC143C"  
+                
+                canvas.create_rectangle(x1, y1, x2, y2,
+                                       fill=color,
+                                       outline=color_borde,
+                                       width=2)
+                
+                letra_fila = chr(fila + ord('A'))
+                numero_columna = columna + 1
+                etiqueta = f"{letra_fila}{numero_columna}"
+                
+                centro_x = (x1 + x2) / 2
+                centro_y = (y1 + y2) / 2
+                canvas.create_text(centro_x, centro_y,
+                                  text=etiqueta,
+                                  font=("Arial", 8, "bold"),
+                                  fill="black")
+        
+        leyenda_y = margen_y + num_filas * tamano_asiento + 15
+        
+        canvas.create_rectangle(margen_x, leyenda_y, margen_x + 20, leyenda_y + 20,
+                               fill="#90EE90", outline="#228B22", width=2)
+        canvas.create_text(margen_x + 30, leyenda_y + 10,
+                          text="Libre", anchor="w", font=("Arial", 9))
+        
+        canvas.create_rectangle(margen_x + 80, leyenda_y, margen_x + 100, leyenda_y + 20,
+                               fill="#FFB6C6", outline="#DC143C", width=2)
+        canvas.create_text(margen_x + 110, leyenda_y + 10,
+                          text="Ocupado", anchor="w", font=("Arial", 9))
+        
+        frame_stats = tk.Frame(ventana_avion, bg="mistyrose", bd=2, relief="solid")
+        frame_stats.pack(pady=10, padx=20, fill="x")
+        
+        stats_texto = f"Asientos totales: {asientos_totales}  |  " \
+                     f"Ocupados: {asientos_ocupados}  |  " \
+                     f"Libres: {asientos_totales - asientos_ocupados}  |  " \
+                     f"Ocupación: {porcentaje:.2f}%"
+        
+        label_stats = tk.Label(frame_stats,
+                              text=stats_texto,
+                              bg="mistyrose",
+                              font=("Arial", 10, "bold"),
+                              fg="dark slate gray",
+                              pady=8)
+        label_stats.pack()
+        
+        boton_cerrar = tk.Button(ventana_avion,
+                                text="Cerrar",
+                                command=ventana_avion.destroy,
+                                bg="light gray",
+                                width=15)
+        boton_cerrar.pack(pady=10)
+        
+        ventana_estado.destroy()
+    
+    boton_mostrar = tk.Button(
+        ventana_estado, text="Ver Estado",
+        command=mostrar_estado,
+        bg="pink", activebackground="hotpink"
+    )
+    boton_mostrar.pack(pady=12)
+    
+    boton_cerrar = tk.Button(
+        ventana_estado, text="Cerrar",
+        command=ventana_estado.destroy,
+        bg="light gray"
+    )
+    boton_cerrar.pack(pady=5)
 
 
 def reservar_asiento():
@@ -252,17 +436,15 @@ def reservar_asiento():
     entry_columna.pack()
     
     def confirmar_reserva():
-        # Obtener valores
+    
         texto_vuelo = entry_vuelo.get().strip()
         letra_fila = entry_fila.get().strip().upper()  # Convertir a mayúscula
         texto_columna = entry_columna.get().strip()
         
-        # Validar que no estén vacíos
         if texto_vuelo == "" or letra_fila == "" or texto_columna == "":
             messagebox.showerror("Error", "Todos los campos son obligatorios.")
             return
         
-        # Validar número de vuelo
         try:
             num_vuelo = int(texto_vuelo)
         except:
@@ -273,24 +455,19 @@ def reservar_asiento():
             messagebox.showerror("Error", f"El vuelo debe estar entre 1 y {len(vuelos)}.")
             return
         
-        # Obtener el vuelo
         indice_vuelo = num_vuelo - 1
         vuelo = vuelos[indice_vuelo]
         
-        # Verificar que el vuelo tenga datos asignados
         if vuelo[0] == "" or vuelo[1] == "" or vuelo[2] == "":
             messagebox.showerror("Error", "Este vuelo no tiene origen/destino asignado.\nUsa la opción 2 primero.")
             return
         
-        # Validar que la letra sea solo una letra
         if len(letra_fila) != 1 or not letra_fila.isalpha():
             messagebox.showerror("Error", "La fila debe ser una sola letra (A, B, C...).")
             return
         
-        # Convertir letra a índice de fila (A=0, B=1, C=2...)
         indice_fila = ord(letra_fila) - ord('A')
         
-        # Validar número de columna
         try:
             num_columna = int(texto_columna)
         except:
@@ -301,15 +478,12 @@ def reservar_asiento():
             messagebox.showerror("Error", "La columna debe ser mayor o igual a 1.")
             return
         
-        # Convertir a índice (columna 1 = índice 0)
         indice_columna = num_columna - 1
         
-        # Obtener matriz de asientos
         matriz = vuelo[4]
         num_filas = len(matriz)
         num_columnas = len(matriz[0]) if num_filas > 0 else 0
         
-        # Validar que el asiento existe
         if indice_fila < 0 or indice_fila >= num_filas:
             messagebox.showerror("Error", f"La fila {letra_fila} no existe.\nEste vuelo tiene filas de A hasta {chr(num_filas - 1 + ord('A'))}.")
             return
@@ -318,12 +492,10 @@ def reservar_asiento():
             messagebox.showerror("Error", f"La columna {num_columna} no existe.\nEste vuelo tiene columnas de 1 hasta {num_columnas}.")
             return
         
-        # Verificar si el asiento está libre (0 = libre, 1 = ocupado)
         if matriz[indice_fila][indice_columna] == 1:
             messagebox.showerror("Error", f"El asiento {letra_fila}{num_columna} ya está ocupado.")
             return
         
-        # Reservar el asiento
         matriz[indice_fila][indice_columna] = 1
         vuelo[5] += 1  # Incrementar contador de vendidos
         
@@ -355,76 +527,65 @@ def reservar_asiento():
     boton_cancelar.pack(pady=5)
 
 def cancelar_reserva():
-    # Verificar que hay vuelos
     if len(vuelos) == 0:
         messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
         return
     
-    # Crear ventana nueva
     ventana_cancelar = tk.Toplevel(ventana)
     ventana_cancelar.title("Cancelar reserva")
     ventana_cancelar.geometry("360x260")
     ventana_cancelar.configure(bg="lavenderblush")
     
-    # Campo: Número de vuelo
+    #Número de vuelo
     etiqueta_vuelo = tk.Label(ventana_cancelar, text=f"Número de vuelo (1 a {len(vuelos)}):", bg="lavenderblush")
     etiqueta_vuelo.pack(pady=5)
     entry_vuelo = tk.Entry(ventana_cancelar)
     entry_vuelo.pack()
     
-    # Campo: Letra de fila
+    #Letra de fila
     etiqueta_fila = tk.Label(ventana_cancelar, text="Letra de fila (ej: A, B, C...):", bg="lavenderblush")
     etiqueta_fila.pack(pady=5)
     entry_fila = tk.Entry(ventana_cancelar)
     entry_fila.pack()
     
-    # Campo: Número de columna
+    #Número de columna
     etiqueta_columna = tk.Label(ventana_cancelar, text="Número de columna (ej: 1, 2, 3...):", bg="lavenderblush")
     etiqueta_columna.pack(pady=5)
     entry_columna = tk.Entry(ventana_cancelar)
     entry_columna.pack()
     
     def confirmar_cancelacion():
-        # Paso 1: Obtener lo que escribió el usuario
         texto_vuelo = entry_vuelo.get().strip()
-        letra_fila = entry_fila.get().strip().upper()  # Convertir a mayúscula
+        letra_fila = entry_fila.get().strip().upper()  
         texto_columna = entry_columna.get().strip()
         
-        # Paso 2: Verificar que no dejó campos vacíos
         if texto_vuelo == "" or letra_fila == "" or texto_columna == "":
             messagebox.showerror("Error", "Todos los campos son obligatorios.")
             return
         
-        # Paso 3: Validar que el número de vuelo sea un número
         try:
             num_vuelo = int(texto_vuelo)
         except:
             messagebox.showerror("Error", "El número de vuelo debe ser un entero.")
             return
         
-        # Paso 4: Verificar que el vuelo existe
         if num_vuelo < 1 or num_vuelo > len(vuelos):
             messagebox.showerror("Error", f"El vuelo debe estar entre 1 y {len(vuelos)}.")
             return
         
-        # Paso 5: Obtener el vuelo de la lista
-        indice_vuelo = num_vuelo - 1  # Convertir a índice (vuelo 1 = índice 0)
+        indice_vuelo = num_vuelo - 1  
         vuelo = vuelos[indice_vuelo]
         
-        # Paso 6: Verificar que el vuelo tenga datos (código, origen, destino)
         if vuelo[0] == "" or vuelo[1] == "" or vuelo[2] == "":
             messagebox.showerror("Error", "Este vuelo no tiene origen/destino asignado.\nUsa la opción 2 primero.")
             return
         
-        # Paso 7: Validar que ingresó solo una letra
         if len(letra_fila) != 1 or not letra_fila.isalpha():
             messagebox.showerror("Error", "La fila debe ser una sola letra (A, B, C...).")
             return
         
-        # Paso 8: Convertir la letra a número (A=0, B=1, C=2...)
         indice_fila = ord(letra_fila) - ord('A')
         
-        # Paso 9: Validar que la columna sea un número
         try:
             num_columna = int(texto_columna)
         except:
@@ -435,41 +596,33 @@ def cancelar_reserva():
             messagebox.showerror("Error", "La columna debe ser mayor o igual a 1.")
             return
         
-        # Paso 10: Convertir columna a índice (columna 1 = índice 0)
         indice_columna = num_columna - 1
         
-        # Paso 11: Obtener la matriz de asientos del vuelo
         matriz = vuelo[4]
         num_filas = len(matriz)
         num_columnas = len(matriz[0]) if num_filas > 0 else 0
         
-        # Paso 12: Verificar que la fila existe
         if indice_fila < 0 or indice_fila >= num_filas:
             messagebox.showerror("Error", f"La fila {letra_fila} no existe.\nEste vuelo tiene filas de A hasta {chr(num_filas - 1 + ord('A'))}.")
             return
         
-        # Paso 13: Verificar que la columna existe
         if indice_columna < 0 or indice_columna >= num_columnas:
             messagebox.showerror("Error", f"La columna {num_columna} no existe.\nEste vuelo tiene columnas de 1 hasta {num_columnas}.")
             return
         
-        # Paso 14: Verificar que el asiento está ocupado (debe ser 1)
         if matriz[indice_fila][indice_columna] == 0:
             messagebox.showerror("Error", f"El asiento {letra_fila}{num_columna} ya está libre.\nNo hay nada que cancelar.")
             return
         
-        # Paso 15: Cancelar la reserva (cambiar de 1 a 0)
         matriz[indice_fila][indice_columna] = 0
-        vuelo[5] = vuelo[5] - 1  # Disminuir el contador de vendidos
-        
-        # Paso 16: Mostrar mensaje de éxito
+        vuelo[5] = vuelo[5] - 1  
+
         messagebox.showinfo(
             "Éxito",
             f"¡Reserva del asiento {letra_fila}{num_columna} cancelada!"
         )
         ventana_cancelar.destroy()
     
-    # Botón para confirmar
     boton_cancelar_reserva = tk.Button(
         ventana_cancelar, text="Cancelar Reserva",
         command=confirmar_cancelacion,
@@ -477,7 +630,6 @@ def cancelar_reserva():
     )
     boton_cancelar_reserva.pack(pady=12)
     
-    # Botón para cerrar la ventana
     boton_cerrar = tk.Button(
         ventana_cancelar, text="Cerrar",
         command=ventana_cancelar.destroy,
@@ -487,49 +639,41 @@ def cancelar_reserva():
 
 
 def ver_estadisticas_ocupacion():
-    # Verificar que hay vuelos
     if len(vuelos) == 0:
         messagebox.showerror("Error", "No hay vuelos creados. Crea un vuelo primero.")
         return
     
-    # Crear ventana nueva
     ventana_stats = tk.Toplevel(ventana)
     ventana_stats.title("Estadísticas de ocupación")
     ventana_stats.geometry("360x180")
     ventana_stats.configure(bg="lavenderblush")
     
-    # Campo: Número de vuelo
+    #Número de vuelo
     etiqueta_vuelo = tk.Label(ventana_stats, text=f"Número de vuelo (1 a {len(vuelos)}):", bg="lavenderblush")
     etiqueta_vuelo.pack(pady=5)
     entry_vuelo = tk.Entry(ventana_stats)
     entry_vuelo.pack()
     
     def mostrar_estadisticas():
-        # Paso 1: Obtener el número de vuelo
         texto_vuelo = entry_vuelo.get().strip()
         
-        # Paso 2: Validar que no esté vacío
         if texto_vuelo == "":
             messagebox.showerror("Error", "Debes ingresar el número de vuelo.")
             return
         
-        # Paso 3: Validar que sea un número
         try:
             num_vuelo = int(texto_vuelo)
         except:
             messagebox.showerror("Error", "El número de vuelo debe ser un entero.")
             return
         
-        # Paso 4: Verificar que el vuelo existe
         if num_vuelo < 1 or num_vuelo > len(vuelos):
             messagebox.showerror("Error", f"El vuelo debe estar entre 1 y {len(vuelos)}.")
             return
         
-        # Paso 5: Obtener el vuelo
         indice_vuelo = num_vuelo - 1
         vuelo = vuelos[indice_vuelo]
         
-        # Paso 6: Verificar que el vuelo tenga datos asignados
         if vuelo[0] == "" or vuelo[1] == "" or vuelo[2] == "":
             messagebox.showerror("Error", "Este vuelo no tiene origen/destino asignado.\nUsa la opción 2 primero.")
             return
@@ -1252,7 +1396,7 @@ boton2 = tk.Button(frame_botones, text="2. Asignar origen/destino y precio a vue
 boton2.pack(pady=5)
 
 boton3 = tk.Button(frame_botones, text="3. Ver estado de un vuelo", width=34,
-                 command=lambda: None,
+                 command=ver_estado_vuelo, 
                  bg="pink", activebackground="hotpink",
                  fg="dark slate gray", activeforeground="dark slate gray", bd=0)
 boton3.pack(pady=5)
